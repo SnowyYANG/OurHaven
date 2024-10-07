@@ -6,7 +6,7 @@
     </head>
     <body>
         <main id="app">
-            <h1>Haven for an Olive Tree and Doves - Concept Text Demo</h1>
+            <h1>Haven for an Olive Tree and Doves (Concept Text Demo)</h1>
             <details>
                 <summary>Tutor</summary>
                 Water the olive tree and it will grow up. Higher lvl tree has more nests for more doves.<br>
@@ -15,13 +15,13 @@
                 Flying the dove with an olive leave, it will come back with a flag.<br>
                 Collect 100 different flags to complete the game.<br>
             </details>
-            <details>
+            <details open>
                 <summary>The Olive Tree (Lvl {{treeLvl}})</summary>
                 <div><a href="#" v-on:click="watering">Watering</a> <a href="#" v-on:click="buildNest">Build New Nest</a></div>
                 <div>Leaves: {{leaves}} </div>
                 <div>Nests: {{nests}} </div>
             </details>
-            <details>
+            <details open>
                 <summary>The Doves ({{doves.length}})</summary>
                 <div v-for="dove in doves">
                     {{dove.name}}
@@ -33,7 +33,7 @@
                 <summary>Flags ({{flags.length}}/100)</summary>
                 <span v-for="flag in flags">{{flag.color}}({{flag.n}}) </span>
             </details>
-            <details>
+            <details open>
                 <summary>News</summary>
                 <div v-for="inews in news">{{inews}}</div>
             </details>
@@ -102,14 +102,14 @@
                                 if (dove.distance == 0) {
                                     this.newNews(dove.name + ' is hungry.');
                                     if (random(0, 100) < 10) {
-                                        dove.distance = random(30, 300);
+                                        dove.distance = random(30, 90);
                                         dove.leave = false;
                                         this.newNews(dove.name + ' has flown out to find food.');
                                     }
                                 }
                             }
                             if (dove.distance == 0 && dove.food > 85 && this.leaves > 0 && random(0, 100) < 5) {
-                                dove.distance = random(30, 300);
+                                dove.distance = random(30, 90);
                                 dove.leave = true;
                                 this.newNews(dove.name + ' has flown out with an olive leave.');
                             }
@@ -152,6 +152,10 @@
                             this.newNews('No more nests can be built.');
                             return;
                         }
+                        if (this.nests >= this.treeLvl * this.treeLvl) {
+                            this.newNews('The olive tree needs a higher level.');
+                            return;
+                        }
                         this.nests++;
                         this.newNews('A new nest has been built.');
                     },
@@ -178,7 +182,7 @@
                             this.newNews(dove.name + ' is too hungry to fly with a leave.');
                             return;
                         }
-                        dove.distance = random(30, 300);
+                        dove.distance = random(30, 90);
                         dove.leave = true;
                         this.newNews(dove.name + ' has flown out with an olive leave.');
                     },
