@@ -120,7 +120,7 @@
                                     var color = FLAGCOLORS[random(0, 100)];
                                     if (dove.leave) {
                                         this.newNews(dove.name + ' has come back with a(n) ' + color + ' flag.');
-                                        for(var flag of flags) {
+                                        for(var flag of this.flags) {
                                             if (flag.color == color) {
                                                 flag.n++;
                                                 color = null;
