@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Haven for an Olive Tree and Doves - Concept Text Demo</title>
+        <title>Haven for an Olive Tree and Doves (Concept Text Demo)</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
     </head>
     <body>
@@ -84,7 +85,7 @@
                             }
                             this.treeExp++;
                             this.newNews('The olive tree is growing.');
-                            if (this.treeExp >= 100 * this.treeLvl) {
+                            if (this.treeExp >= 30 * this.treeLvl) {
                                 this.treeExp = 0;
                                 this.treeLvl++;
                                 this.newNews('The olive tree levels up, you can build new nest for a new dove.');
