@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Haven for an Olive Tree and Doves - Concept Text Demo</title>
+        <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    </head>
+    <body>
+        <main id="app">
+            <h1>Haven for an Olive Tree and Doves - Concept Text Demo</h1>
+            <details>
+                <summary>Tutor</summary>
+                Water the olive tree and it will grow up. Higher lvl tree has more nests for more doves.<br>
+                New nest would attract a dove in some time.<br>
+                Feed the dove so they can fly, if a dove is hungry for some time, it may fly out to find food by its own.<br>
+                Flying the dove with an olive leave, it will come back with a flag.<br>
+                Collect 100 different flags to complete the game.<br>
+            </details>
+            <details>
+                <summary>The Olive Tree (Lvl {{treeLvl}})</summary>
+                <div><a href="#" v-on:click="watering">Watering</a> <a href="#" v-on:click="buildNest">Build New Nest</a></div>
+                <div>Leaves: {{leaves}} </div>
+                <div>Nests: {{nests}} </div>
+            </details>
+            <details>
+                <summary>The Doves ({{doves.length}})</summary>
+                <div v-for="dove in doves">
+                    {{dove.name}}
+                    <template v-if="dove.distance">(out flying...)</template>
+                    <template v-else><a href="#" v-on:click="feed(dove)">Feeding</a> <a href="#">Flying with Leave</a></template>
+                </div>
+            </details>
+            <details>
+                <summary>Flags ({{flags.length}}/100)</summary>
+                <span v-for="flag in flags">{{flag.color}}({{flag.n}}) </span>
+            </details>
+            <details>
+                <summary>News</summary>
+                <div v-for="inews in news">{{inews}}</div>
+            </details>
+        </main>
+        <script>
+            function random(min, max) {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+            var app = new Vue({
+                el: '#app',
+                data: {
+                    isRainning: false,
+                    treeExp: 0,
+                    treeLvl: 1,
+                    water: 100,
+                    leaves: 3,
+                    nests: 1,
+                    doves: [],
+                    flags: [],
+                    news: []
+                },
+                methods: {
+                    update: function() {
+                        this.water--;
+                        if (this.water < 0) {
+                            this.water = 0;
+                            if (random(0, 100) < 35) {
+                                this.leaves--;
+                                this.newNews('An olive leaf has fallen.');
+                            }
+                        }
+                        if (!this.isRainning && random(0, 100) < 3) {
+                            this.isRainning = true;
+                            this.water = 100;
+                            this.newNews('It starts to rain.');
+                        }
+                        if (this.isRainning && random(0, 100) < 15) {
+                            this.isRainning = false;
+                            this.newNews('The rain stops.');
+                        }
+                        if (this.water < 30) {
+                            this.newNews('The olive tree needs water.');
+                        }
+                        if (this.water >= 60) {
+                            if (random(0, 100) < 35) {
+                                this.leaves++;
+                                this.newNews('A new olive leaf is mature.');
+                            }
+                            this.treeExp++;
+                            this.newNews('The olive tree is growing.');
+                            if (this.treeExp >= 100 * this.treeLvl) {
+                                this.treeExp = 0;
+                                this.treeLvl++;
+                                this.newNews('The olive tree levels up, you can build new nest for a new dove.');
+                            }
+                        }
+                        if (this.doves.length < this.nests && random(0, 100) < 10) {
+                            this.addDove();
+                        }
+                        for(var dove of this.doves) {
+                            dove.food--;
+                            if (dove.food < 0) {
+                                dove.food = 0;
+                            }
+                            if (dove.food < 30) {
+                                if (dove.distance == 0) {
+                                    this.newNews(dove.name + ' is hungry.');
+                                    if (random(0, 100) < 10) {
+                                        dove.distance = random(30, 300);
+                                        dove.leave = false;
+                                        this.newNews(dove.name + ' has flown out to find food.');
+                                    }
+                                }
+                            }
+                            if (dove.distance == 0 && dove.food > 85 && this.leaves > 0 && random(0, 100) < 5) {
+                                dove.distance = random(30, 300);
+                                dove.leave = true;
+                                this.newNews(dove.name + ' has flown out with an olive leave.');
+                            }
+                            if (dove.distance > 0) {
+                                dove.distance--;
+                                if (dove.distance == 0) {
+                                    const FLAGCOLORS = ['red', 'green', 'blue', 'yellow', 'purple', 'orange', 'pink', 'brown', 'black', 'white', 'gray', 'cyan', 'magenta', 'lime', 'olive', 'maroon', 'navy', 'teal', 'silver', 'gold', 'indigo', 'violet', 'tan', 'azure', 'beige', 'coral', 'crimson', 'fuchsia', 'khaki', 'lavender', 'salmon', 'turquoise', 'plum', 'orchid', 'chartreuse', 'aquamarine', 'bisque', 'peru', 'thistle', 'wheat', 'burlywood', 'cadetblue', 'cornsilk', 'darkcyan', 'darkgoldenrod', 'darkkhaki', 'darkmagenta', 'darkolivegreen', 'darkorange', 'darkorchid', 'darkred', 'darksalmon', 'darkseagreen', 'darkslateblue', 'darkturquoise', 'darkviolet', 'deeppink', 'deepskyblue', 'dimgray', 'dodgerblue', 'firebrick', 'floralwhite', 'forestgreen', 'gainsboro', 'ghostwhite', 'goldenrod', 'greenyellow', 'honeydew', 'hotpink', 'indianred', 'ivory', 'khaki', 'lavenderblush', 'lawngreen', 'lemonchiffon', 'lightblue', 'lightcoral', 'lightcyan', 'lightgoldenrodyellow', 'lightgreen', 'lightgrey', 'lightpink', 'lightsalmon', 'lightseagreen', 'lightskyblue', 'lightslategray', 'lightsteelblue', 'lightyellow', 'limegreen', 'linen', 'mediumaquamarine', 'mediumblue', 'mediumorchid', 'mediumpurple', 'mediumseagreen', 'mediumslateblue', 'mediumspringgreen', 'mediumturquoise', 'mediumvioletred', 'midnightblue', 'mintcream', 'mistyrose', 'moccasin', 'navajowhite', 'oldlace', 'olivedrab', 'orangered', 'palegoldenrod', 'palegreen', 'paleturquoise', 'palevioletred', 'papayawhip', 'peachpuff', 'powderblue', 'rosybrown', 'royalblue', 'saddlebrown', 'sandybrown', 'seagreen', 'seashell', 'sienna', 'skyblue', 'slateblue', 'slategray', 'snow', 'springgreen', 'steelblue', 'tan', 'thistle', 'tomato', 'turquoise', 'violet', 'wheat', 'whitesmoke', 'yellowgreen'];
+                                    var color = FLAGCOLORS[random(0, 100)];
+                                    if (dove.leave) {
+                                        this.newNews(dove.name + ' has come back with a(n) ' + color + ' flag.');
+                                        for(var flag of flags) {
+                                            if (flag.color == color) {
+                                                flag.n++;
+                                                color = null;
+                                                break;
+                                            }
+                                        }
+                                        if (color) {
+                                            this.flags.push({color: color, n: 1});
+                                            if (this.flags.length >= 100) {
+                                                this.newNews('Congratulations! You have collected 100 different flags.');
+                                                clearInterval(timer);
+                                            }
+                                        }
+                                    }
+                                    else {
+                                        dove.food = 95;
+                                        this.newNews(dove.name + ' is full and comes back.');
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    watering: function() {
+                        this.water = 100;
+                        this.newNews('The olive tree has been watered.');
+                    },
+                    buildNest: function() {
+                        if (this.nests >= 26) {
+                            this.newNews('No more nests can be built.');
+                            return;
+                        }
+                        this.nests++;
+                        this.newNews('A new nest has been built.');
+                    },
+                    addDove: function() {
+                        if (this.doves.length >= this.nests) {
+                            this.newNews('Need an empty nest.');
+                            return;
+                        }
+                        const DOVENAMES = ['Alice', 'Betty', 'Charlie', 'David', 'Eve', 'Frank', 'Grace', 'Helen', 'Ivy', 'Jack', 'Kate', 'Lily', 'Mike', 'Nancy', 'Oscar', 'Peter', 'Queen', 'Rose', 'Sam', 'Tom', 'Uma', 'Vicky', 'Will', 'Xavier', 'Yvonne', 'Zack'];
+                        const name = DOVENAMES[this.doves.length];
+                        this.doves.push({name: name, food: random(60, 100), distance: 0, leave: false});
+                        this.newNews('A new dove has come to the haven. Its name is ' + name + '.');
+                    },
+                    feed: function(dove) {
+                        dove.food = 100;
+                        this.newNews(dove.name + ' has been fed.');
+                    },
+                    fly: function(dove) {
+                        if (this.leaves == 0) {
+                            this.newNews('No more olive leaves.');
+                            return;
+                        }
+                        if (dove.food < 85) {
+                            this.newNews(dove.name + ' is too hungry to fly with a leave.');
+                            return;
+                        }
+                        dove.leave = true;
+                        this.newNews(dove.name + ' has flown out with an olive leave.');
+                    },
+                    newNews: function(news) {
+                        this.news.unshift(news);
+                    }
+                }
+            });
+            var timer = setInterval(function() {
+                app.update();
+            }, 1000);
+        </script>
+    </body>
+</html>
