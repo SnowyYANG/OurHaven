@@ -26,7 +26,7 @@
                 <div v-for="dove in doves">
                     {{dove.name}}
                     <template v-if="dove.distance">(out flying...)</template>
-                    <template v-else><a href="#" v-on:click="feed(dove)">Feeding</a> <a href="#">Flying with Leave</a></template>
+                    <template v-else><a href="#" v-on:click="feed(dove)">Feeding</a> <a href="#" v-on:click="flyWithLeave(dove)">Flying with Leave</a></template>
                 </div>
             </details>
             <details>
@@ -169,7 +169,7 @@
                         dove.food = 100;
                         this.newNews(dove.name + ' has been fed.');
                     },
-                    fly: function(dove) {
+                    flyWithLeave: function(dove) {
                         if (this.leaves == 0) {
                             this.newNews('No more olive leaves.');
                             return;
@@ -178,6 +178,7 @@
                             this.newNews(dove.name + ' is too hungry to fly with a leave.');
                             return;
                         }
+                        dove.distance = random(30, 300);
                         dove.leave = true;
                         this.newNews(dove.name + ' has flown out with an olive leave.');
                     },
