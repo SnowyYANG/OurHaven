@@ -10,24 +10,23 @@
             <h1 style="font-size:1rem">Haven for an Olive Tree and Doves (Concept Text Demo)</h1>
             <details>
                 <summary>Tutor</summary>
-                Water the olive tree and it will grow up. Higher lvl tree has more nests for more doves.<br>
-                New nest would attract a dove in some time.<br>
+                Water the olive tree and it will grow up.<br>
+                Doves would be attracted to the haven some time.<br>
                 Feed the dove so they can fly, if a dove is hungry for some time, it may fly out to find food by its own.<br>
-                Flying the dove with an olive leave, it will come back with a flag.<br>
+                A dove fly out with an olive leave will come back with a flag.<br>
                 Collect 100 different flags to complete the game.<br>
             </details>
             <details open>
-                <summary>The Olive Tree (Lvl {{treeLvl}})</summary>
-                <div><a href="#" v-on:click="watering">Watering</a> <a href="#" v-on:click="buildNest">Build New Nest</a></div>
+                <summary>The Olive Tree</summary>
+                <div><a href="#" v-on:click.prevent="watering">Watering</a></div>
                 <div>Leaves: {{leaves}} </div>
-                <div>Nests: {{nests}} </div>
             </details>
             <details open>
                 <summary>The Doves ({{doves.length}})</summary>
                 <div v-for="dove in doves">
                     {{dove.name}}
                     <template v-if="dove.distance">(out flying...)</template>
-                    <template v-else><a href="#" v-on:click="feed(dove)">Feeding</a> <a href="#" v-on:click="flyWithLeave(dove)">Flying with Leave</a></template>
+                    <template v-else><a href="#" v-on:click.prevent="feed(dove)">Feed</a></template>
                 </div>
             </details>
             <details>
@@ -47,11 +46,8 @@
                 el: '#app',
                 data: {
                     isRainning: false,
-                    treeExp: 0,
-                    treeLvl: 1,
                     water: 100,
                     leaves: 3,
-                    nests: 1,
                     doves: [],
                     flags: [],
                     news: []
@@ -83,15 +79,8 @@
                                 this.leaves++;
                                 this.newNews('A new olive leaf is mature.');
                             }
-                            this.treeExp++;
-                            this.newNews('The olive tree is growing.');
-                            if (this.treeExp >= 30 * this.treeLvl) {
-                                this.treeExp = 0;
-                                this.treeLvl++;
-                                this.newNews('The olive tree levels up, you can build new nest for a new dove.');
-                            }
                         }
-                        if (this.doves.length < this.nests && random(0, 100) < 10) {
+                        if (this.doves.length < 26 && random(0, 100) < 10) {
                             this.addDove();
                         }
                         for(var dove of this.doves) {
@@ -148,23 +137,7 @@
                         this.water = 100;
                         this.newNews('The olive tree has been watered.');
                     },
-                    buildNest: function() {
-                        if (this.nests >= 26) {
-                            this.newNews('No more nests can be built.');
-                            return;
-                        }
-                        if (this.nests >= this.treeLvl * this.treeLvl) {
-                            this.newNews('The olive tree needs a higher level.');
-                            return;
-                        }
-                        this.nests++;
-                        this.newNews('A new nest has been built.');
-                    },
                     addDove: function() {
-                        if (this.doves.length >= this.nests) {
-                            this.newNews('Need an empty nest.');
-                            return;
-                        }
                         const DOVENAMES = ['Alice', 'Betty', 'Charlie', 'David', 'Eve', 'Frank', 'Grace', 'Helen', 'Ivy', 'Jack', 'Kate', 'Lily', 'Mike', 'Nancy', 'Oscar', 'Peter', 'Queen', 'Rose', 'Sam', 'Tom', 'Uma', 'Vicky', 'Will', 'Xavier', 'Yvonne', 'Zack'];
                         const name = DOVENAMES[this.doves.length];
                         this.doves.push({name: name, food: random(60, 100), distance: 0, leave: false});
@@ -173,19 +146,6 @@
                     feed: function(dove) {
                         dove.food = 100;
                         this.newNews(dove.name + ' has been fed.');
-                    },
-                    flyWithLeave: function(dove) {
-                        if (this.leaves == 0) {
-                            this.newNews('No more olive leaves.');
-                            return;
-                        }
-                        if (dove.food < 85) {
-                            this.newNews(dove.name + ' is too hungry to fly with a leave.');
-                            return;
-                        }
-                        dove.distance = random(30, 90);
-                        dove.leave = true;
-                        this.newNews(dove.name + ' has flown out with an olive leave.');
                     },
                     newNews: function(news) {
                         this.news.unshift(news);
