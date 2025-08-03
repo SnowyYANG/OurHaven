@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Haven for an Olive Tree and Doves (Concept Text Demo)</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    </head>
+    <body>
+        <main id="app" style="background:#fff;">
+            <h1 style="font-size:1rem;">Haven for an Olive Tree and Doves (202507281455)</h1>
+            <details open>
+                <summary>教程</summary>
+                点击给橄榄树浇水，橄榄树会长出更多叶子，有时也会下雨；<br>
+                路过的鸽子有时会来橄榄树上筑巢安家；<br>
+                点击把鸽子喂饱，吃饱的鸽子会叼着橄榄树叶飞出去，鸽子太饿了也会自己飞出去觅食；<br>
+                叼着橄榄树叶飞出去的鸽子可能带着旗子回来！<br>
+                邂逅所有的鸽子，集齐100种不同的旗子可以通关。<br>
+            </details>
+            <details open>
+                <summary>橄榄树</summary>
+                <div><a href="#" v-on:click.prevent="watering">浇水</a></div>
+                <div>叶子: {{leaves}} 片</div>
+            </details>
+            <details open>
+                <summary>鸽子们 ({{doves.length}})</summary>
+                <div v-for="dove in doves">
+                    {{dove.name}}
+                    <template v-if="dove.distance">(在外飞行中……)</template>
+                    <template v-else><a href="#" v-on:click.prevent="feed(dove)">喂食</a></template>
+                </div>
+            </details>
+            <details>
+                <summary>旗子 ({{flags.length}}/100)</summary>
+                <span v-for="flag in flags"><span :style="{color:flag.color,background:flag.bg}">旗子</span>*{{flag.n}} </span>
+            </details>
+            <details open>
+                <summary>日志</summary>
+                <div v-for="inews in news" v-html="inews"></div>
+            </details>
+        </main>
+        <script>
+            function random(min, max) {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+            const BG = [
+  '#C2F9D3', // 薄荷绿
+  '#FFD6E8', // 樱花粉
+  '#D0F0FF', // 淡天蓝
+  '#FDF6E3', // 米白
+  '#E1D5F2', // 雪青
+  '#FFFACD', // 柠檬奶油黄
+  '#FFE5B4', // 淡橘色
+  '#D6EAF8', // 浅灰蓝
+  '#F8F8FF', // 珍珠白
+  '#F4C2C2'  // 豆沙粉
+];
+
+const FG = [
+  '#0B3D91', // 深藏青色
+  '#0F3B2E', // 墨绿色
+  '#4B0E0E', // 暗酒红
+  '#1A1A6E', // 深靛蓝
+  '#3A2F4D', // 深灰紫
+  '#1C1C1C', // 炭黑
+  '#3B3F26', // 深橄榄绿
+  '#4E342E', // 深棕色
+  '#003B49', // 深靛青
+  '#2E003E'  // 深紫罗兰
+];
+            var app = new Vue({
+                el: '#app',
+                data: {
+                    isRainning: false,
+                    water: 100,
+                    leaves: 3,
+                    doves: [],
+                    flags: [],
+                    news: []
+                },
+                methods: {
+                    update: function() {
+                        this.water--
+                        if (this.water < 0) {
+                            this.water = 0
+                            if (random(0, 100) < 35) {
+                                this.leaves--
+                                this.newNews('落下了一片橄榄树叶。')
+                            }
+                        }
+                        if (!this.isRainning && random(0, 100) < 3) {
+                            this.isRainning = true
+                            this.water = 100
+                            this.newNews('开始下雨了……');
+                        }
+                        if (this.isRainning && random(0, 100) < 15) {
+                            this.isRainning = false
+                            this.newNews('雨停了。')
+                        }
+                        if (this.water < 30) {
+                            this.newNews('橄榄树需要水。')
+                        }
+                        if (this.water >= 60) {
+                            if (random(0, 100) < 35) {
+                                this.leaves++
+                                this.newNews('一片新的橄榄树叶成熟了。')
+                            }
+                        }
+                        if (this.doves.length < 26 && random(0, 100) < 10) {
+                            this.addDove()
+                        }
+                        for(var dove of this.doves) {
+                            dove.food--
+                            if (dove.food < 0) {
+                                dove.food = 0
+                            }
+                            if (dove.food < 30) {
+                                if (dove.distance == 0) {
+                                    this.newNews(dove.name + '饿了。')
+                                    if (random(0, 100) < 10) {
+                                        dove.distance = random(30, 90)
+                                        dove.leave = false
+                                        this.newNews(dove.name + '飞出去觅食了……')
+                                    }
+                                }
+                            }
+                            if (dove.distance == 0 && dove.food > 85 && this.leaves > 0 && random(0, 100) < 5) {
+                                dove.distance = random(30, 90)
+                                dove.leave = true
+                                this.newNews(dove.name + '衔着叶子飞出去了……');
+                            }
+                            if (dove.distance > 0) {
+                                dove.distance--
+                                if (dove.distance == 0) {
+                                    var color = FG[random(0, 10)]
+                                    var bg = BG[random(0, 10)]
+                                    var flag = {color: color, bg: bg}
+                                    if (dove.leave) {
+                                        this.newNews(dove.name + '带着<span style="color:'+flag.color+';background:'+flag.bg+'">旗子</span>回来了！')
+                                        for(var flag of this.flags) {
+                                            if (flag.color === color && flag.bg === bg) {
+                                                flag.n++
+                                                flag = null
+                                                break;
+                                            }
+                                        }
+                                        if (flag) {
+                                            this.flags.push({color: color, bg: bg, n: 1})
+                                            if (this.flags.length >= 100) {
+                                                this.newNews('恭喜！你集齐了100种旗子！')
+                                                clearInterval(timer)
+                                            }
+                                        }
+                                    }
+                                    else {
+                                        dove.food = 95
+                                        this.newNews(dove.name + '吃好回来了。')
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    watering: function() {
+                        this.water = 100
+                        this.newNews('橄榄树浇水完成。')
+                    },
+                    addDove: function() {
+                        const DOVENAMES = ['Alice', 'Betty', 'Charlie', 'David', 'Eve', 'Frank', 'Grace', 'Helen', 'Ivy', 'Jack', 'Kate', 'Lily', 'Mike', 'Nancy', 'Oscar', 'Peter', 'Queen', 'Rose', 'Sam', 'Tom', 'Uma', 'Vicky', 'Will', 'Xavier', 'Yvonne', 'Zack'];
+                        const name = DOVENAMES[this.doves.length]
+                        this.doves.push({name: name, food: random(60, 100), distance: 0, leave: false})
+                        this.newNews('来了一只新鸽子，它叫' + name + '。')
+                    },
+                    feed: function(dove) {
+                        dove.food += 60
+                        this.newNews('喂了' + dove.name + '。')
+                    },
+                    newNews: function(news) {
+                        this.news.unshift(news)
+                    }
+                }
+            });
+            var timer = setInterval(function() {
+                app.update()
+            }, 1000);
+        </script>
+    </body>
+</html>
