@@ -36,6 +36,7 @@ func _input(event):
 			marker.position = mouse_pos - nearest_line.global_position
 			nearest_line.add_child(marker)
 	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
+		clear_tree()
 		depth = 2
 		initial_length = 10
 		angle_spread_deg = 30
@@ -55,24 +56,22 @@ func _draw():
 	for line in lines:
 		for child in line.get_children():
 			if child is Node2D:
-				print("node2d")
 				var global_pos = line.to_global(child.position)
 				draw_circle(global_pos, 6, Color(1, 1, 1), false)
 
 func rebuild_tree() -> void:
 	# 清除已有 Line2D，然后从 root_offset 向上画主干
 	# 起始向上方向为 -90 度（即屏幕向上）
-	draw_branch("l", root_offset, -90.0, initial_length, depth)
+	draw_branch("t", root_offset, -90.0, initial_length, depth)
 
 func clear_tree() -> void:
-	pass
-	# 只移除并释放子节点中的 Line2D（保留其他节点/控制节点）
-	#for child in get_children():
-	#	if child is Line2D:
-	#		remove_child(child)
-	#		child.queue_free()
+	lines.clear()
+	for child in get_children():
+		if child is Line2D:
+			remove_child(child)
+			child.queue_free()
 
-func draw_branch(name: String, start_pos: Vector2, angle_deg_local: float, length: float, depth_local: int) -> void:
+func draw_branch(linename: String, start_pos: Vector2, angle_deg_local: float, length: float, depth_local: int) -> void:
 	# 计算终点
 	var rad = deg_to_rad(angle_deg_local)
 	var dir = Vector2(cos(rad), sin(rad))
@@ -80,14 +79,14 @@ func draw_branch(name: String, start_pos: Vector2, angle_deg_local: float, lengt
 
 	var line = null
 	for existing_line in lines:
-		if existing_line.name == name:
+		if existing_line.name == linename:
 			line = existing_line
 			break
 	
 	# 创建 Line2D 节点表示这段分支
 	if (line == null):
 		line = Line2D.new()
-		line.name = name
+		line.name = linename
 		line.width = line_width
 		line.default_color = line_color
 		lines.append(line)
@@ -99,26 +98,13 @@ func draw_branch(name: String, start_pos: Vector2, angle_deg_local: float, lengt
 	if line.get_point_count() >= 2:
 		old_start = line.get_point_position(0)
 		old_end = line.get_point_position(1)
-	line.clear_points()
+		line.clear_points()
 	line.add_point(start_pos)
 	line.add_point(end_pos)
-	var old_vec = old_end - old_start
-	var new_vec = end_pos - start_pos
-	var old_len = old_vec.length()
-	var new_len = new_vec.length()
-	var old_angle = old_vec.angle()
-	var new_angle = new_vec.angle()
 	for child in line.get_children():
 		if child is Node2D:
-			# 计算 child 在旧线段上的参数 t
-			var rel = child.position + old_start  # child.position 是相对于 line
-			var t = 0
-			if (old_len > 0):
-				t = (rel - old_start).dot(old_vec) / (old_len * old_len)
-			t = clamp(t, 0, 1)  
-			# 新位置
-			var new_pos = start_pos + new_vec * t
-			child.position = new_pos - line.global_position
+			var p = (child.position - old_start).length() / (old_end - old_start).length()
+			child.position = Vector2(start_pos.x + p * (end_pos.x - start_pos.x), start_pos.y + p * (end_pos.y - start_pos.y))
 
 	# 递归终止条件：已经绘制此段后，如果 depth_local<=0 则不再继续
 	if depth_local <= 0:
@@ -128,10 +114,10 @@ func draw_branch(name: String, start_pos: Vector2, angle_deg_local: float, lengt
 	var spread = angle_spread_deg
 
 	# 三叉：左、中、右
-	var p = 1.1
-	if randf() < p:
-		draw_branch(name + "l", end_pos, angle_deg_local - spread, next_length, depth_local - 1)
-	if randf() < p:
-		draw_branch(name + "m", end_pos, angle_deg_local, next_length, depth_local - 1)
-	if randf() < p:
-		draw_branch(name + "r", end_pos, angle_deg_local + spread, next_length, depth_local - 1)
+	var p2 = 1.1
+	if randf() < p2:
+		draw_branch(linename + "l", end_pos, angle_deg_local - spread, next_length, depth_local - 1)
+	if randf() < p2:
+		draw_branch(linename + "m", end_pos, angle_deg_local, next_length, depth_local - 1)
+	if randf() < p2:
+		draw_branch(linename + "r", end_pos, angle_deg_local + spread, next_length, depth_local - 1)
