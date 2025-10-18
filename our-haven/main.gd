@@ -12,13 +12,48 @@ var line_color = Color(1, 1, 1)      # 线颜色
 var root_offset = Vector2(400, 400)    # 根点偏移（相对于此 Node2D 的局部坐标）
 var ellipse_points := []  # 存储所有点击点
 var lines := []
+@onready var bird = $Bird
+
+var bezier_active := false
+var bezier_p0 := Vector2.ZERO
+var bezier_p1 := Vector2.ZERO
+var bezier_p2 := Vector2.ZERO
+var bezier_p3 := Vector2.ZERO
+var bezier_duration := 2.0
+var bezier_progress := 0.0
 
 func _ready():
 	# 自动在场景运行时构建树
 	set_process_input(true)
 	rebuild_tree()
 
+func _process(delta):
+	if bezier_active:
+		bezier_progress += delta
+		var t := bezier_progress / bezier_duration
+		print(t)
+		if t >= 1.0:
+			t = 1.0
+			bezier_active = false
+		# 三次贝塞尔
+		var omt := 1.0 - t
+		var pos := omt * omt * omt * bezier_p0 \
+			+ 3.0 * omt * omt * t * bezier_p1 \
+			+ 3.0 * omt * t * t * bezier_p2 \
+			+ t * t * t * bezier_p3
+		bird.global_position = pos
+		queue_redraw()
+
 func _input(event):
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+		bezier_p0 = Vector2.ZERO
+		bezier_p3 = get_global_mouse_position()
+		# 可自定义控制点以获得不同曲线形状
+		bezier_p1 = Vector2(100, 300)                     # 从左上向下的控制点
+		bezier_p2 = get_global_mouse_position() + Vector2(0, -300)           # 在目标上方回拉
+		bezier_duration = 3.0
+		bezier_progress = 0.0
+		bezier_active = true
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 		var mouse_pos = event.position
 		var min_dist = INF
